@@ -1,9 +1,10 @@
-import { isLogin, login } from "./controllers/auth";
+import { isLogin, login, refreshToken } from "./controllers/auth";
 
 export default (plugin) => {
 
     plugin.controllers.auth.login = login
     plugin.controllers.auth.isLogin = isLogin
+    plugin.controllers.auth.refreshToken = refreshToken
 
 
     plugin.routes['content-api'].routes.push({
@@ -15,6 +16,11 @@ export default (plugin) => {
         method: 'GET',
         path: '/auth/login-state',
         handler: 'auth.isLogin',
+    });
+    plugin.routes['content-api'].routes.push({
+        method: 'POST',
+        path: '/auth/refresh-token',
+        handler: 'auth.refreshToken',
     });
     return plugin;
 }

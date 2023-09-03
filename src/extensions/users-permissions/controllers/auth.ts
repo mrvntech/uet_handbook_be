@@ -25,8 +25,8 @@ export async function login(ctx) {
         if (!validPassword) {
             return ctx.body = Response({ statusCode: ErrorCode.BadRequest, errorMessage: 'Invalid identifier or password', body: {} })
         }
-        const token = await strapi.service('plugin::users-permissions.jwt').issue({ id: user.id });
-        const refreshToken = sign({ userId: user.id }, config.jwt.secret.refreshToken)
+        const token = sign({ id: user.id }, config.jwt.secret.token, { expiresIn: config.jwt.expiresIn.token })
+        const refreshToken = sign({ id: user.id }, config.jwt.secret.refreshToken, { expiresIn: config.jwt.expiresIn.refreshToken })
         return ctx.body = Response({ statusCode: ErrorCode.Success, errorMessage: {}, body: { token, refreshToken } })
     } catch (error) {
         let errorsMessage = error.details.map(errorDetail => errorDetail.message)
@@ -35,5 +35,13 @@ export async function login(ctx) {
 }
 
 export async function isLogin(ctx) {
-    return ctx.body = Response({statusCode: ErrorCode.Success, errorMessage: {}, body: true});
+    return ctx.body = Response({ statusCode: ErrorCode.Success, errorMessage: {}, body: true });
+}
+
+export async function refreshToken(ctx) {
+    const body = ctx.request.body;
+    const result = verify(body.refreshToken, config.jwt.secret.refreshToken);
+    const token = sign({ id: result.id }, config.jwt.secret.token, { expiresIn: config.jwt.expiresIn.token })
+    const refreshToken = sign({ id: result.id }, config.jwt.secret.refreshToken, { expiresIn: config.jwt.expiresIn.refreshToken })
+    return ctx.body = Response({ statusCode: ErrorCode.Success, errorMessage: {}, body: { token, refreshToken } })
 }
